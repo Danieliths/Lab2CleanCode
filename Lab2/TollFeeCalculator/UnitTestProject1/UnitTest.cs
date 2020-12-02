@@ -24,7 +24,22 @@ namespace TollFeeCalculatorTest
 
 		//DateTime[] dates = new DateTime[dateStrings.Length - 1]; // tar bort sista datumet
 		[TestMethod]
-		public void GetDatesFromFileTest()
+		public void DateTimeParseExceptionTest()
+		{
+			//Arrange
+			Program program = new Program();
+			var expected = ""; //TODO
+			var testString = "2020-06-30 00:05, 2020-06-30 06:34";
+			var wrongTextToDateTimeParse = "sdfgsgs";
+			//Act
+			var actual = program.GetDatesFromFile(testString);
+			//Assert
+			Assert.ThrowsException<FormatException>(() => program.GetDatesFromFile(wrongTextToDateTimeParse));
+			Assert.ThrowsException<NullReferenceException>(() => program.GetDatesFromFile(null));
+		}
+
+		[TestMethod]
+		public void DateTimeParseTest()
 		{
 			//Arrange
 			Program program = new Program();
@@ -33,15 +48,11 @@ namespace TollFeeCalculatorTest
 				DateTime.Parse("2020-06-30 00:05"),
 				DateTime.Parse("2020-06-30 06:34")
 			};
-			var wrongTextToDateTimeParse = "654166";
 			//Act
 			var actual = program.GetDatesFromFile(testString);
 			//Assert
 			CollectionAssert.AreEqual(expected, actual);
-			Assert.ThrowsException<FormatException>(() => program.GetDatesFromFile(testString));
-			Assert.ThrowsException<NullReferenceException>(() => program.GetDatesFromFile(null));
 		}
-
 		//dates[i] = DateTime.Parse(dateStrings[i]); // felhantering
 		[TestMethod]
 		public void TestMethod3()

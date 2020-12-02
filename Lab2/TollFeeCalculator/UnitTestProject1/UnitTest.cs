@@ -14,32 +14,39 @@ namespace TollFeeCalculatorTest
 		public void ReadFromDirectoryTest()
 		{
 			//Arrange
-			string wrongDirectory = "adfasfasfaf.txt";
 			string emptyString = "";
-			//Act
-			//Assert
-			Assert.ThrowsException<FileNotFoundException>(() => Program.run(wrongDirectory));
-			Assert.ThrowsException<ArgumentException>(() => Program.run(emptyString));
-		}
+			var program = new Program();
 
-		//DateTime[] dates = new DateTime[dateStrings.Length - 1]; // tar bort sista datumet
+            //Act
+            string expected = "2020-06-30 00:05";
+
+			var actual = program.ReadFromFile(Environment.CurrentDirectory + "../../../../testDataTestFile.txt");
+			var secondActual = program.ReadFromFile(emptyString);
+
+			//Assert
+			Assert.AreEqual(expected, actual);
+			Assert.AreEqual("Could not read file.", secondActual);
+		}
+	
+		//dates[i] = DateTime.Parse(dateStrings[i]); // felhantering
 		[TestMethod]
 		public void DateTimeParseExceptionTest()
 		{
 			//Arrange
 			Program program = new Program();
-			var expected = ""; //TODO
-			var testString = "2020-06-30 00:05, 2020-06-30 06:34";
-			var wrongTextToDateTimeParse = "sdfgsgs";
+			var testString = "2020-06-30 j05, 20206-30 06:34, 2020-08-30 0989:39";
+			var expected = new DateTime[] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue};
+
 			//Act
 			var actual = program.GetDatesFromFile(testString);
+
 			//Assert
-			Assert.ThrowsException<FormatException>(() => program.GetDatesFromFile(wrongTextToDateTimeParse));
-			Assert.ThrowsException<NullReferenceException>(() => program.GetDatesFromFile(null));
+			CollectionAssert.AreEqual(expected, actual);
 		}
 
+		//DateTime[] dates = new DateTime[dateStrings.Length - 1]; // tar bort sista datumet
 		[TestMethod]
-		public void DateTimeParseTest()
+		public void DateTimeCorrectArrayParseTest()
 		{
 			//Arrange
 			Program program = new Program();
@@ -48,20 +55,12 @@ namespace TollFeeCalculatorTest
 				DateTime.Parse("2020-06-30 00:05"),
 				DateTime.Parse("2020-06-30 06:34")
 			};
+
 			//Act
 			var actual = program.GetDatesFromFile(testString);
+
 			//Assert
 			CollectionAssert.AreEqual(expected, actual);
-		}
-		//dates[i] = DateTime.Parse(dateStrings[i]); // felhantering
-		[TestMethod]
-		public void TestMethod3()
-		{
-			//Arrange
-
-			//Act
-
-			//Assert
 		}
 
 		//Console.Write("The total fee for the inputfile is" + TotalFeeCost(dates)); // sakna mellanslag

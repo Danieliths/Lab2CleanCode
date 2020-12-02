@@ -12,17 +12,24 @@ namespace TollFeeCalculator
 		public static void run(String inputFile)
 		{
 			string indata;
-			try
-			{
-				indata = System.IO.File.ReadAllText(inputFile);
-			}
-			catch (Exception ex)
-			{
-				throw;
-			}
+			
 			Program program = new Program();
 			var dates = program.GetDatesFromFile(inputFile);
 			Console.Write("The total fee for the inputfile is" + TotalFeeCost(dates));
+		}
+
+		public string ReadFromFile(string path)
+        {
+			string indata;
+			try
+			{
+				indata = System.IO.File.ReadAllText(path);
+				return indata;
+			}
+			catch (Exception)
+			{
+				return "Could not read file.";
+			}
 		}
 
 		public DateTime[] GetDatesFromFile(string input)
@@ -31,7 +38,14 @@ namespace TollFeeCalculator
 			DateTime[] dates = new DateTime[dateStrings.Length];
 			for (int i = 0; i < dates.Length; i++)
 			{
-				dates[i] = DateTime.Parse(dateStrings[i]);
+                try
+                {
+					dates[i] = DateTime.ParseExact(dateStrings[i], "yyyy-MM-dd HH:mm", null);          
+                }
+                catch (Exception)
+                {
+					dates[i] = DateTime.MinValue;
+                }
 			}
 			return dates;
 		}

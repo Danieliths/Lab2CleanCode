@@ -23,16 +23,13 @@ namespace TollFeeCalculator
                     dates[i] = DateTime.MinValue;
                 }
             }
-
             return dates.ToList();
         }
 
         public List<List<DateTime>> SortDatesPerDay(List<DateTime> inputDates)
         {
             var dates = new List<List<DateTime>>();
-
             inputDates.Sort((x, y) => x.CompareTo(y));
-
             dates = inputDates.GroupBy(a => a.Date).Select(a => a.ToList()).ToList();
             return dates;
         }

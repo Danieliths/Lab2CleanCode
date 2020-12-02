@@ -1,133 +1,228 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using TollFeeCalculator;
 
 namespace TollFeeCalculatorTest
 {
-	[TestClass]
-	public class UnitTest
-	{
+    [TestClass]
+    public class UnitTest
+    {
 
-		//13: string indata = System.IO.File.ReadAllText(inputFile); // felhantering
-		[TestMethod]
-		public void ReadFromDirectoryTest()
-		{
-			//Arrange
-			string emptyString = "";
-			var program = new Program();
+        //1
+        [TestMethod]
+        public void ReadFromDirectoryTest()
+        {
+            //Arrange
+            string emptyString = "";
+            var program = new Program();
 
             //Act
             string expected = "2020-06-30 00:05";
 
-			var actual = program.ReadFromFile(Environment.CurrentDirectory + "../../../../testDataTestFile.txt");
-			var secondActual = program.ReadFromFile(emptyString);
+            var actual = program.ReadFromFile(Environment.CurrentDirectory + "../../../../testDataTestFile.txt");
+            var secondActual = program.ReadFromFile(emptyString);
 
-			//Assert
-			Assert.AreEqual(expected, actual);
-			Assert.AreEqual("Could not read file.", secondActual);
-		}
-	
-		//dates[i] = DateTime.Parse(dateStrings[i]); // felhantering
-		[TestMethod]
-		public void DateTimeParseExceptionTest()
-		{
-			//Arrange
-			Program program = new Program();
-			var testString = "2020-06-30 j05, 20206-30 06:34, 2020-08-30 0989:39";
-			var expected = new DateTime[] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue};
+            //Assert
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("Could not read file.", secondActual);
+        }
 
-			//Act
-			var actual = program.GetDatesFromFile(testString);
+        //2
+        [TestMethod]
+        public void DateTimeParseExceptionTest()
+        {
+            //Arrange
+            Program program = new Program();
+            var testString = "2020-06-30 j05, 20206-30 06:34, 2020-08-30 0989:39";
+            var expected = new DateTime[] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue };
 
-			//Assert
-			CollectionAssert.AreEqual(expected, actual);
-		}
+            //Act
+            var actual = program.GetDatesFromFile(testString);
 
-		//DateTime[] dates = new DateTime[dateStrings.Length - 1]; // tar bort sista datumet
-		[TestMethod]
-		public void DateTimeCorrectArrayParseTest()
-		{
-			//Arrange
-			Program program = new Program();
-			var testString = "2020-06-30 00:05, 2020-06-30 06:34";
-			var expected = new DateTime[] {
-				DateTime.Parse("2020-06-30 00:05"),
-				DateTime.Parse("2020-06-30 06:34")
-			};
+            //Assert
+            CollectionAssert.AreEqual(expected, actual);
+        }
 
-			//Act
-			var actual = program.GetDatesFromFile(testString);
+        //3
+        [TestMethod]
+        public void DateTimeCorrectArrayParseTest()
+        {
+            //Arrange
+            Program program = new Program();
+            var testString = "2020-06-30 00:05, 2020-06-30 06:34";
+            var expected = new DateTime[] {
+                DateTime.Parse("2020-06-30 00:05"),
+                DateTime.Parse("2020-06-30 06:34")
+            };
 
-			//Assert
-			CollectionAssert.AreEqual(expected, actual);
-		}
+            //Act
+            var actual = program.GetDatesFromFile(testString);
 
-		//Console.Write("The total fee for the inputfile is" + TotalFeeCost(dates)); // sakna mellanslag
-		[TestMethod]
-		public void TestMethod4()
-		{
-			//Arrange
+            //Assert
+            CollectionAssert.AreEqual(expected, actual);
+        }
 
-			//Act
+        //4
+        [TestMethod]
+        public void CreateOutputStringTest()
+        {
+            //Arrange
+            var program = new Program();
+            var excpected = "The total fee for the inputfile is 108";
 
-			//Assert
-		}
+            //Act
+            var actual = program.CreateOutputString(108);
 
-		//long diffInMinutes = (d2 - si).Minutes; // räknar bara minuter inte timmar returnar alltid -59 - 59 så aldrig över 60 TotalMinutes
-		[TestMethod]
-		public void TestMethod5()
-		{
-			//Arrange
+            //Assert
+            Assert.AreEqual(excpected, actual);
+        }
 
-			//Act
+        //5
+        [TestMethod]
+        public void DifferenceInMinutesTest()
+        {
+            //Arrange
+            var dates = new DateTime[]
+            {
+                DateTime.Parse("2020-09-30 07:00"),
+                DateTime.Parse("2020-09-30 09:00")
+            };
+            var expected = 120;
+            var program = new Program();
 
-			//Assert
-		}
+            //Act
+            var actual = program.DifferenceInMinutes(dates[0], dates[1]);
 
-		//fee += Math.Max(TollFeePass(d2), TollFeePass(si)); // lägga till skillande inte båda värdena
-		[TestMethod]
-		public void TestMethod6()
-		{
-			//Arrange
+            //Assert
+            Assert.AreEqual(expected, actual);
+        }
 
-			//Act
+        //6
+        [TestMethod]
+        public void AddDifferenceBetweenTollsTest()
+        {
+            //Arrange
+            var program = new Program();
+            var excpected = 4;
 
-			//Assert
-		}
+            //Act
+            var acutal = program.AddDifferenceBetweenTolls(4, 8);
 
-		//return Math.Max(fee, 60); // retunerar alltid 60 borde vara Min istället+
-		[TestMethod]
-		public void TestMethod7()
-		{
-			//Arrange
+            //Assert
+            Assert.AreEqual(excpected, acutal);
+        }
 
-			//Act
+        //7
+        [TestMethod]
+        public void TotalFeeCostTest()
+        {
+            //Arrange
+            var program = new Program();
+            var dates = new DateTime[]
+            {
+                DateTime.Parse("2020-09-30 06:25"),
+                DateTime.Parse("2020-09-30 06:55"),
+                DateTime.Parse("2020-09-30 07:05")
+            };
+            var excpected = 18;
 
-			//Assert
-		}
+            //Act
+            var acutal = Program.TotalFeeCost(dates);
 
-		//else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8; // andra delen av statmentet är fel
-		//else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18; // skall vara får 1530 inte 1500 fel grejer som är fuckade
-		[TestMethod]
-		public void TestMethod8()
-		{
-			//Arrange
+            //Assert
+            Assert.AreEqual(excpected, acutal);
+        }
 
-			//Act
+        //8
+        [TestMethod]
+        public void IncreaseMaxFeePerDayTest()
+        {
+            //Arrange
+            var program = new Program();
+            var dates = new DateTime[]
+            {
+                DateTime.Parse("2020-09-28 06:25"),
+                DateTime.Parse("2020-09-28 06:55"),
+                DateTime.Parse("2020-09-28 07:05"),
+                DateTime.Parse("2020-09-28 15:30"),
+                DateTime.Parse("2020-09-29 06:25"),
+                DateTime.Parse("2020-09-29 06:55"),
+                DateTime.Parse("2020-09-29 07:05"),
+                DateTime.Parse("2020-09-29 15:30"),
+                DateTime.Parse("2020-09-30 06:25"),
+                DateTime.Parse("2020-09-30 06:55"),
+                DateTime.Parse("2020-09-30 07:05"),
+                DateTime.Parse("2020-09-30 15:30")
+            };
+            var excpected = 108;
 
-			//Assert
-		}
+            //Act
+            var acutal = Program.TotalFeeCost(dates);
 
-		//return (int)day.DayOfWeek == 5 || (int)day.DayOfWeek == 6 || day.Month == 7; // söndag är 0 och lördag är 6
-		[TestMethod]
-		public void TestMethod9()
-		{
-			//Arrange
+            //Assert
+            Assert.AreEqual(excpected, acutal);
+        }
 
-			//Act
+        //9
+        [TestMethod]
+        public void TollFeeTest()
+        {
+            //Arrange
+            var dates = new Dictionary<DateTime, int>()
+            {
+                { DateTime.Parse("2020-09-28 05:00"), 0 },
+                { DateTime.Parse("2020-09-28 06:25"), 8  },
+                { DateTime.Parse("2020-09-28 06:55"), 13  },
+                { DateTime.Parse("2020-09-28 07:05"), 18  },
+                { DateTime.Parse("2020-09-28 08:24"), 13  },
+                { DateTime.Parse("2020-09-29 09:22"), 8  },
+                { DateTime.Parse("2020-09-29 15:12"), 13  },
+                { DateTime.Parse("2020-09-29 16:05"), 18  },
+                { DateTime.Parse("2020-09-29 17:30"), 13  },
+                { DateTime.Parse("2020-09-30 18:04"), 8 },
+                { DateTime.Parse("2020-09-30 18:36"), 0 }
+            };
 
-			//Assert
-		}
-	}
+            //Assert
+            foreach (var date in dates)
+            {
+                Assert.AreEqual(date.Value, Program.TollFeePass(date.Key));
+            }
+        }
+
+        //10
+        [TestMethod]
+        public void FreeDayTest()
+        {
+            //Arrange
+            var dates = new Dictionary<DateTime, bool>()
+            {
+                { DateTime.Parse("2020-11-30 05:00"), false },
+                { DateTime.Parse("2020-12-01 06:25"), false  },
+                { DateTime.Parse("2020-12-02 06:55"), false  },
+                { DateTime.Parse("2020-12-03 07:05"), false  },
+                { DateTime.Parse("2020-12-04 08:24"), false  },
+                { DateTime.Parse("2020-12-05 09:22"), true  },
+                { DateTime.Parse("2020-12-06 15:12"), true  },
+                { DateTime.Parse("2020-07-01 16:05"), true  },
+                { DateTime.Parse("2020-01-01 16:05"), false  },
+                { DateTime.Parse("2020-02-04 16:05"), false  },
+                { DateTime.Parse("2020-03-03 16:05"), false  },
+                { DateTime.Parse("2020-04-01 16:05"), false  },
+                { DateTime.Parse("2020-05-01 16:05"), false },
+                { DateTime.Parse("2020-06-01 16:05"), false  },
+                { DateTime.Parse("2020-08-04 16:05"), false  },
+                { DateTime.Parse("2020-09-01 16:05"), false  },
+                { DateTime.Parse("2020-10-01 16:05"), false  },
+            };
+
+            //Assert
+            foreach (var date in dates)
+            {
+                Assert.AreEqual(date.Value, Program.free(date.Key));
+            }
+        }
+    }
 }

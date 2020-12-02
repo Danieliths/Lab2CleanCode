@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TollFeeCalculator
 {
@@ -50,27 +52,65 @@ namespace TollFeeCalculator
 			return dates;
 		}
 
-		static int TotalFeeCost(DateTime[] d)
+		public static int TotalFeeCost(DateTime[] d)
 		{
-			int fee = 0;
+			int dailyFee = 0;
+			int feePaidThisHour = 0;
+			int totalFee = 0;
+
 			DateTime si = d[0]; //Starting interval
-			foreach (var d2 in d)
-			{
-				long diffInMinutes = (d2 - si).Minutes;
-				if (diffInMinutes > 60)
+			var program = new Program();
+			var datesPerDay = SortDatesPerDay(d.ToList());
+
+            foreach (var date in datesPerDay)
+            {				
+				foreach (var d2 in date)
 				{
-					fee += TollFeePass(d2);
-					si = d2;
+					long diffInMinutes = program.DifferenceInMinutes(si, d2);
+					if (diffInMinutes > 60)
+					{
+						feePaidThisHour = TollFeePass(d2);
+						dailyFee += TollFeePass(d2);
+						si = d2;
+					}
+					else
+					{
+						var feeToAdd = program.AddDifferenceBetweenTolls(TollFeePass(d2), feePaidThisHour);
+						feePaidThisHour += feeToAdd;
+						dailyFee += feeToAdd;
+					}
 				}
-				else
-				{
-					fee += Math.Max(TollFeePass(d2), TollFeePass(si));
-				}
+				totalFee += Math.Min(dailyFee, 60);
+				dailyFee = 0;
 			}
-			return Math.Max(fee, 60);
+
+			return totalFee;
 		}
 
-		static int TollFeePass(DateTime d)
+        private static List<List<DateTime>> SortDatesPerDay(List<DateTime> inputDates)
+        {
+			var dates = new List<List<DateTime>>();
+			inputDates.Sort();
+			dates = inputDates.GroupBy(x => x.Day).Select(a => a.ToList()).ToList();
+			return dates;
+        }
+
+        public int DifferenceInMinutes(DateTime firstDate, DateTime secondDate)
+        {
+			return (int)(secondDate - firstDate).TotalMinutes;
+		}
+
+		public int AddDifferenceBetweenTolls(int firstFee, int secondFee)
+        {
+			return (Math.Max(firstFee, secondFee) - Math.Min(firstFee, secondFee));
+		}
+
+		public string CreateOutputString(int total)
+        {
+			return "The total fee for the inputfile is " + total;
+		}
+
+		public static int TollFeePass(DateTime d)
 		{
 			if (free(d)) return 0;
 			int hour = d.Hour;
@@ -79,7 +119,7 @@ namespace TollFeeCalculator
 			else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
 			else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
 			else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-			else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8;
+			else if (hour >= 8 && hour <= 14 && minute >= 00 && minute <= 59) return 8;
 			else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
 			else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
 			else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
@@ -87,9 +127,9 @@ namespace TollFeeCalculator
 			else return 0;
 		}
 		//Gets free dates
-		static bool free(DateTime day)
+		public static bool free(DateTime day)
 		{
-			return (int)day.DayOfWeek == 5 || (int)day.DayOfWeek == 6 || day.Month == 7;
+			return (int)day.DayOfWeek == 0 || (int)day.DayOfWeek == 6 || day.Month == 7;
 		}
 	}
 }

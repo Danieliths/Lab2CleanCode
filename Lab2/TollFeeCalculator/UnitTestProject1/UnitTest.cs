@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TollFeeCalculator;
 
 namespace TollFeeCalculatorTest
@@ -16,13 +17,13 @@ namespace TollFeeCalculatorTest
         {
             //Arrange
             string emptyString = "";
-            var program = new Program();
+            var fileReader = new FileReader();
 
             //Act
             string expected = "2020-06-30 00:05";
 
-            var actual = program.ReadFromFile(Environment.CurrentDirectory + "../../../../testDataTestFile.txt");
-            var secondActual = program.ReadFromFile(emptyString);
+            var actual = fileReader.Read(Environment.CurrentDirectory + "../../../../testDataTestFile.txt");
+            var secondActual = fileReader.Read(emptyString);
 
             //Assert
             Assert.AreEqual(expected, actual);
@@ -34,12 +35,12 @@ namespace TollFeeCalculatorTest
         public void DateTimeParseExceptionTest()
         {
             //Arrange
-            Program program = new Program();
+            var parser = new DateTimeParser();
             var testString = "2020-06-30 j05, 20206-30 06:34, 2020-08-30 0989:39";
             var expected = new DateTime[] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue };
 
             //Act
-            var actual = program.GetDatesFromFile(testString);
+            var actual = parser.ParseDatesFromString(testString);
 
             //Assert
             CollectionAssert.AreEqual(expected, actual);
@@ -50,7 +51,7 @@ namespace TollFeeCalculatorTest
         public void DateTimeCorrectArrayParseTest()
         {
             //Arrange
-            Program program = new Program();
+            var parser = new DateTimeParser();
             var testString = "2020-06-30 00:05, 2020-06-30 06:34";
             var expected = new DateTime[] {
                 DateTime.Parse("2020-06-30 00:05"),
@@ -58,7 +59,7 @@ namespace TollFeeCalculatorTest
             };
 
             //Act
-            var actual = program.GetDatesFromFile(testString);
+            var actual = parser.ParseDatesFromString(testString);
 
             //Assert
             CollectionAssert.AreEqual(expected, actual);
@@ -69,11 +70,11 @@ namespace TollFeeCalculatorTest
         public void CreateOutputStringTest()
         {
             //Arrange
-            var program = new Program();
+            var calculator = new Calculator();
             var excpected = "The total fee for the inputfile is 108";
 
             //Act
-            var actual = program.CreateOutputString(108);
+            var actual = calculator.CreateOutputString(108);
 
             //Assert
             Assert.AreEqual(excpected, actual);
@@ -84,16 +85,16 @@ namespace TollFeeCalculatorTest
         public void DifferenceInMinutesTest()
         {
             //Arrange
+            var calculator = new Calculator();
             var dates = new DateTime[]
             {
                 DateTime.Parse("2020-09-30 07:00"),
                 DateTime.Parse("2020-09-30 09:00")
             };
             var expected = 120;
-            var program = new Program();
 
             //Act
-            var actual = program.DifferenceInMinutes(dates[0], dates[1]);
+            var actual = calculator.DifferenceInMinutes(dates[0], dates[1]);
 
             //Assert
             Assert.AreEqual(expected, actual);
@@ -104,11 +105,11 @@ namespace TollFeeCalculatorTest
         public void AddDifferenceBetweenTollsTest()
         {
             //Arrange
-            var program = new Program();
+            var calculator = new Calculator();
             var excpected = 4;
 
             //Act
-            var acutal = program.AddDifferenceBetweenTolls(4, 8);
+            var acutal = calculator.AddDifferenceBetweenTolls(4, 8);
 
             //Assert
             Assert.AreEqual(excpected, acutal);
@@ -119,17 +120,20 @@ namespace TollFeeCalculatorTest
         public void TotalFeeCostTest()
         {
             //Arrange
-            var program = new Program();
-            var dates = new DateTime[]
+            var calculator = new Calculator();
+            var dates = new List<List<DateTime>>()
             {
-                DateTime.Parse("2020-09-30 06:25"),
-                DateTime.Parse("2020-09-30 06:55"),
-                DateTime.Parse("2020-09-30 07:05")
+                new List<DateTime>()
+                {
+                    DateTime.Parse("2020-09-30 06:25"),
+                    DateTime.Parse("2020-09-30 06:55"),
+                    DateTime.Parse("2020-09-30 07:05")
+                }
             };
             var excpected = 18;
 
             //Act
-            var acutal = Program.TotalFeeCost(dates);
+            var acutal = calculator.TotalFeeCost(dates);
 
             //Assert
             Assert.AreEqual(excpected, acutal);
@@ -140,26 +144,34 @@ namespace TollFeeCalculatorTest
         public void IncreaseMaxFeePerDayTest()
         {
             //Arrange
-            var program = new Program();
-            var dates = new DateTime[]
+            var calculator = new Calculator();
+            var dates = new List<List<DateTime>>()
             {
-                DateTime.Parse("2020-09-28 06:25"),
-                DateTime.Parse("2020-09-28 06:55"),
-                DateTime.Parse("2020-09-28 07:05"),
-                DateTime.Parse("2020-09-28 15:30"),
-                DateTime.Parse("2020-09-29 06:25"),
-                DateTime.Parse("2020-09-29 06:55"),
-                DateTime.Parse("2020-09-29 07:05"),
-                DateTime.Parse("2020-09-29 15:30"),
-                DateTime.Parse("2020-09-30 06:25"),
-                DateTime.Parse("2020-09-30 06:55"),
-                DateTime.Parse("2020-09-30 07:05"),
-                DateTime.Parse("2020-09-30 15:30")
+                new List<DateTime>(){
+                    DateTime.Parse("2020-09-28 06:25"),
+                    DateTime.Parse("2020-09-28 06:55"),
+                    DateTime.Parse("2020-09-28 07:05"),
+                    DateTime.Parse("2020-09-28 15:30"),
+                },
+                new List<DateTime>()
+                {
+                    DateTime.Parse("2020-09-29 06:25"),
+                    DateTime.Parse("2020-09-29 06:55"),
+                    DateTime.Parse("2020-09-29 07:05"),
+                    DateTime.Parse("2020-09-29 15:30"),
+                },
+                new List<DateTime>()
+                {
+                    DateTime.Parse("2020-09-30 06:25"),
+                    DateTime.Parse("2020-09-30 06:55"),
+                    DateTime.Parse("2020-09-30 07:05"),
+                    DateTime.Parse("2020-09-30 15:30")
+                }
             };
             var excpected = 108;
 
             //Act
-            var acutal = Program.TotalFeeCost(dates);
+            var acutal = calculator.TotalFeeCost(dates);
 
             //Assert
             Assert.AreEqual(excpected, acutal);
@@ -170,6 +182,7 @@ namespace TollFeeCalculatorTest
         public void TollFeeTest()
         {
             //Arrange
+            var calculator = new Calculator();
             var dates = new Dictionary<DateTime, int>()
             {
                 { DateTime.Parse("2020-09-28 05:00"), 0 },
@@ -188,7 +201,7 @@ namespace TollFeeCalculatorTest
             //Assert
             foreach (var date in dates)
             {
-                Assert.AreEqual(date.Value, Program.TollFeePass(date.Key));
+                Assert.AreEqual(date.Value, calculator.TollFeePass(date.Key));
             }
         }
 
@@ -197,6 +210,7 @@ namespace TollFeeCalculatorTest
         public void FreeDayTest()
         {
             //Arrange
+            var calculator = new Calculator();
             var dates = new Dictionary<DateTime, bool>()
             {
                 { DateTime.Parse("2020-11-30 05:00"), false },
@@ -221,8 +235,59 @@ namespace TollFeeCalculatorTest
             //Assert
             foreach (var date in dates)
             {
-                Assert.AreEqual(date.Value, Program.free(date.Key));
+                Assert.AreEqual(date.Value, calculator.free(date.Key));
             }
+        }
+
+        [TestMethod]
+        public void SortDatesPerDayTest()
+        {
+            //Arrange
+            var parser = new DateTimeParser();
+            var dates = new List<DateTime>()
+            {
+                DateTime.Parse("2020-09-28 06:25"),
+                DateTime.Parse("2020-09-28 07:05"),
+                DateTime.Parse("2020-09-29 06:55"),
+                DateTime.Parse("2020-09-28 15:30"),
+                DateTime.Parse("2020-09-30 15:30"),
+                DateTime.Parse("2020-09-30 07:05"),
+                DateTime.Parse("2020-09-29 06:25"),
+                DateTime.Parse("2020-09-30 06:55"),
+                DateTime.Parse("2020-09-29 07:05"),
+                DateTime.Parse("2020-09-30 06:25"),
+                DateTime.Parse("2020-09-28 06:55"),
+                DateTime.Parse("2020-09-29 15:30")
+            };
+            var excpected = new List<List<DateTime>>()
+            {
+                new List<DateTime>(){
+                    DateTime.Parse("2020-09-28 06:25"),
+                    DateTime.Parse("2020-09-28 06:55"),
+                    DateTime.Parse("2020-09-28 07:05"),
+                    DateTime.Parse("2020-09-28 15:30"),
+                },
+                new List<DateTime>()
+                {
+                    DateTime.Parse("2020-09-29 06:25"),
+                    DateTime.Parse("2020-09-29 06:55"),
+                    DateTime.Parse("2020-09-29 07:05"),
+                    DateTime.Parse("2020-09-29 15:30"),
+                },
+                new List<DateTime>()
+                {
+                    DateTime.Parse("2020-09-30 06:25"),
+                    DateTime.Parse("2020-09-30 06:55"),
+                    DateTime.Parse("2020-09-30 07:05"),
+                    DateTime.Parse("2020-09-30 15:30")
+                }
+            }; ;
+            //Act
+            var actual = parser.SortDatesPerDay(dates);
+            //Assert
+            CollectionAssert.AreEqual(excpected[0], actual[0]);
+            CollectionAssert.AreEqual(excpected[1], actual[1]); 
+            CollectionAssert.AreEqual(excpected[2], actual[2]);
         }
     }
 }

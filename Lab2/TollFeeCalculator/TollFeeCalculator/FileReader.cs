@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace TollFeeCalculator
 {
-    public class FileReader
-    {
+	public class FileReader
+	{
 		public string Read(string path)
 		{
 			string indata;

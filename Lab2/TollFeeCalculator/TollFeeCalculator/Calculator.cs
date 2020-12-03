@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace TollFeeCalculator
 {
-    public class Calculator
-    {
+	public class Calculator
+	{
 		private readonly DateTimeParser _dateTimeParser;
 		private readonly FileReader _fileReader;
 		public Calculator()
@@ -26,7 +26,6 @@ namespace TollFeeCalculator
 			int feePaidThisHour = 0;
 			int totalFee = 0;
 			DateTime firstPassageThisHour = dates[0][0];
-			
 			foreach (var date in dates)
 			{
 				foreach (var tollPassage in date)
@@ -49,9 +48,9 @@ namespace TollFeeCalculator
 				totalFee += Math.Min(dailyFee, 60);
 				dailyFee = 0;
 			}
-
 			return totalFee;
 		}
+
 		public int DifferenceInMinutes(DateTime firstDate, DateTime secondDate)
 		{
 			return (int)(secondDate - firstDate).TotalMinutes;
@@ -62,15 +61,13 @@ namespace TollFeeCalculator
 			return Math.Max(firstFee, secondFee) - Math.Min(firstFee, secondFee);
 		}
 
-		
-
 		public int CostOfPassage(DateTime date)
 		{
 			var timeOfPassage = DateTime.Parse(date.ToString("HH:mm"));
 			if (IsDayFree(date))
 				return 0;
 			else if (DateTime.Compare(timeOfPassage, DateTime.Parse("06:00")) < 0)
-				return  0;
+				return 0;
 			else if (DateTime.Compare(timeOfPassage, DateTime.Parse("06:30")) < 0)
 				return 8;
 			else if (DateTime.Compare(timeOfPassage, DateTime.Parse("07:00")) < 0)
@@ -89,7 +86,7 @@ namespace TollFeeCalculator
 				return 13;
 			else if (DateTime.Compare(timeOfPassage, DateTime.Parse("18:30")) < 0)
 				return 8;
-			else 
+			else
 				return 0;
 		}
 

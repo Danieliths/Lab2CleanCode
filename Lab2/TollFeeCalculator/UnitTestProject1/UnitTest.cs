@@ -16,8 +16,8 @@ namespace TollFeeCalculatorTest
 			//Arrange
 			string emptyString = "";
 			var fileReader = new FileReader();
-			//Act
 			string expected = "2020-06-30 00:05";
+			//Act
 			var actual = fileReader.Read(Environment.CurrentDirectory + "../../../../testDataTestFile.txt");
 			var secondActual = fileReader.Read(emptyString);
 			//Assert
@@ -55,16 +55,23 @@ namespace TollFeeCalculatorTest
 		}
 
 		[TestMethod]
-		public void CreateOutputStringTest()
+		public void PrintTollCostTest()
 		{
 			//Arrange
-			var calculator = new Calculator();
-			var excpected = "The total fee for the inputfile is 108";
+			var printer = new ConsolePrinter();
+			var expected = "The total fee for the inputfile is 108";
+			string actual;
 			//Act
-			var actual = calculator.CreateOutputString(108);
+			using (StringWriter sw = new StringWriter())
+			{
+				Console.SetOut(sw);
+				printer.PrintTollCost(108);
+				actual = sw.ToString();
+			}
 			//Assert
-			Assert.AreEqual(excpected, actual);
+			Assert.AreEqual(expected, actual);
 		}
+
 
 		[TestMethod]
 		public void DifferenceInMinutesTest()
@@ -141,10 +148,24 @@ namespace TollFeeCalculatorTest
 						  DateTime.Parse("2020-09-30 06:25"),
 						  DateTime.Parse("2020-09-30 06:55"),
 						  DateTime.Parse("2020-09-30 07:05"),
-						  DateTime.Parse("2020-09-30 15:30")
+						  DateTime.Parse("2020-09-30 08:25"),
+						  DateTime.Parse("2020-09-30 08:55"),
+						  DateTime.Parse("2020-09-30 09:05"),
+						  DateTime.Parse("2020-09-30 10:25"),
+						  DateTime.Parse("2020-09-30 11:55"),
+						  DateTime.Parse("2020-09-30 12:05"),
+						  DateTime.Parse("2020-09-30 13:05"),
+						  DateTime.Parse("2020-09-30 13:25"),
+						  DateTime.Parse("2020-09-30 14:55"),
+						  DateTime.Parse("2020-09-30 15:05"),
+						  DateTime.Parse("2020-09-30 15:30"),
+						  DateTime.Parse("2020-09-30 16:05"),
+						  DateTime.Parse("2020-09-30 17:25"),
+						  DateTime.Parse("2020-09-30 17:55"),
+						  DateTime.Parse("2020-09-30 18:05"),
 					 }
 				};
-			var excpected = 108;
+			var excpected = 132;
 			//Act
 			var acutal = calculator.TotalFeeCost(dates);
 			//Assert
@@ -173,7 +194,7 @@ namespace TollFeeCalculatorTest
 			//Assert
 			foreach (var date in dates)
 			{
-				Assert.AreEqual(date.Value, calculator.TollFeePass(date.Key));
+				Assert.AreEqual(date.Value, calculator.CostOfPassage(date.Key));
 			}
 		}
 
@@ -182,30 +203,19 @@ namespace TollFeeCalculatorTest
 		{
 			//Arrange
 			var calculator = new Calculator();
-			var dates = new Dictionary<DateTime, bool>()
+			var dates = new Dictionary<DateTime, int>()
 				{
-					 { DateTime.Parse("2020-11-30 05:00"), false },
-					 { DateTime.Parse("2020-12-01 06:25"), false },
-					 { DateTime.Parse("2020-12-02 06:55"), false },
-					 { DateTime.Parse("2020-12-03 07:05"), false },
-					 { DateTime.Parse("2020-12-04 08:24"), false },
-					 { DateTime.Parse("2020-12-05 09:22"), true  },
-					 { DateTime.Parse("2020-12-06 15:12"), true  },
-					 { DateTime.Parse("2020-07-01 16:05"), true  },
-					 { DateTime.Parse("2020-01-01 16:05"), false },
-					 { DateTime.Parse("2020-02-04 16:05"), false },
-					 { DateTime.Parse("2020-03-03 16:05"), false },
-					 { DateTime.Parse("2020-04-01 16:05"), false },
-					 { DateTime.Parse("2020-05-01 16:05"), false },
-					 { DateTime.Parse("2020-06-01 16:05"), false },
-					 { DateTime.Parse("2020-08-04 16:05"), false },
-					 { DateTime.Parse("2020-09-01 16:05"), false },
-					 { DateTime.Parse("2020-10-01 16:05"), false },
+					 { DateTime.Parse("2020-09-28 06:25"), 8  },
+					 { DateTime.Parse("2020-09-29 09:22"), 8  },
+					 { DateTime.Parse("2020-09-30 18:04"), 8  },
+					 { DateTime.Parse("2020-12-05 09:22"), 0  },
+					 { DateTime.Parse("2020-12-06 15:12"), 0  },
+					 { DateTime.Parse("2020-07-01 16:05"), 0  },
 				};
 			//Assert
 			foreach (var date in dates)
 			{
-				Assert.AreEqual(date.Value, calculator.free(date.Key));
+				Assert.AreEqual(date.Value, calculator.CostOfPassage(date.Key));
 			}
 		}
 

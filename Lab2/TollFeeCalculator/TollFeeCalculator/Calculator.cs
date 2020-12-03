@@ -5,15 +5,18 @@ namespace TollFeeCalculator
 {
     public class Calculator
     {
+		private readonly DateTimeParser _dateTimeParser;
+		private readonly FileReader _fileReader;
+		public Calculator()
+		{
+			_dateTimeParser = new DateTimeParser();
+			_fileReader = new FileReader();
+		}
 		public int CalculateTollFee(string path)
 		{
-			var fileReader = new FileReader();
-			var file = fileReader.Read(path);
-			var parser = new DateTimeParser();
-
-			var dates = parser.ParseDatesFromString(file);
-			var sortedDates = parser.SortDatesPerDay(dates);
-
+			var file = _fileReader.Read(path);
+			var dates = _dateTimeParser.ParseDatesFromString(file);
+			var sortedDates = _dateTimeParser.SortDatesPerDay(dates);
 			return TotalFeeCost(sortedDates);
 		}
 
@@ -23,21 +26,22 @@ namespace TollFeeCalculator
 			int feePaidThisHour = 0;
 			int totalFee = 0;
 			DateTime firstPassageThisHour = dates[0][0];
-
+			
 			foreach (var date in dates)
 			{
 				foreach (var tollPassage in date)
 				{
-					int diffInMinutes = DifferenceInMinutes(firstPassageThisHour, tollPassage);
-					if (diffInMinutes > 60)
+					int differenceInMinutes = DifferenceInMinutes(firstPassageThisHour, tollPassage);
+					if (differenceInMinutes > 60)
 					{
-						feePaidThisHour = TollFeePass(tollPassage);
-						dailyFee += TollFeePass(tollPassage);
+						var costOfPassage = CostOfPassage(tollPassage);
+						feePaidThisHour = costOfPassage;
+						dailyFee += costOfPassage;
 						firstPassageThisHour = tollPassage;
 					}
 					else
 					{
-						var feeToAdd = AddDifferenceBetweenTolls(TollFeePass(tollPassage), feePaidThisHour);
+						var feeToAdd = AddDifferenceBetweenTolls(CostOfPassage(tollPassage), feePaidThisHour);
 						feePaidThisHour += feeToAdd;
 						dailyFee += feeToAdd;
 					}
@@ -58,19 +62,14 @@ namespace TollFeeCalculator
 			return Math.Max(firstFee, secondFee) - Math.Min(firstFee, secondFee);
 		}
 
-		public string CreateOutputString(int total)
-		{
-			return "The total fee for the inputfile is " + total;
-		}
+		
 
-		public int TollFeePass(DateTime date)
+		public int CostOfPassage(DateTime date)
 		{
-			if (free(date)) 
-				return 0;
-			//TODO om time är innan Parsen så retunera
-			// dock vet jag inte om detta är snyggare än det andra krokbot men blir ganska överskådligt iaf
 			var timeOfPassage = DateTime.Parse(date.ToString("HH:mm"));
-			if (DateTime.Compare(timeOfPassage, DateTime.Parse("06:00")) < 0)
+			if (IsDayFree(date))
+				return 0;
+			else if (DateTime.Compare(timeOfPassage, DateTime.Parse("06:00")) < 0)
 				return  0;
 			else if (DateTime.Compare(timeOfPassage, DateTime.Parse("06:30")) < 0)
 				return 8;
@@ -92,22 +91,9 @@ namespace TollFeeCalculator
 				return 8;
 			else 
 				return 0;
-
-			//int hour = date.Hour;
-			//int minute = date.Minute;
-			//if (hour == 6 && minute >= 0 && minute <= 29) return 8;
-			//else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
-			//else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
-			//else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-			//else if (hour >= 8 && hour <= 14 && minute >= 00 && minute <= 59) return 8;
-			//else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
-			//else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
-			//else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
-			//else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-			//else return 0;
 		}
 
-		public bool free(DateTime day)
+		bool IsDayFree(DateTime day)
 		{
 			return (int)day.DayOfWeek == 0 || (int)day.DayOfWeek == 6 || day.Month == 7;
 		}

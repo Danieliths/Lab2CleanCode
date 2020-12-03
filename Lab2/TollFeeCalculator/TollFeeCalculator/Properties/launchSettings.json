@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TollFeeCalculator": {
+      "commandName": "Project"
+    },
+    "TollFeeCalculatorTest": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -7,11 +7,13 @@ namespace TollFeeCalculator
 	{
 		private readonly DateTimeParser _dateTimeParser;
 		private readonly FileReader _fileReader;
+
 		public Calculator()
 		{
 			_dateTimeParser = new DateTimeParser();
 			_fileReader = new FileReader();
 		}
+
 		public int CalculateTollFee(string path)
 		{
 			var file = _fileReader.Read(path);
@@ -89,7 +91,6 @@ namespace TollFeeCalculator
 			else
 				return 0;
 		}
-
 		bool IsDayFree(DateTime day)
 		{
 			return (int)day.DayOfWeek == 0 || (int)day.DayOfWeek == 6 || day.Month == 7;

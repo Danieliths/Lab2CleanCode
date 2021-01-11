@@ -1,6 +1,6 @@
-# CleanCode---TollFeeCalculator
-# Daniel Andersson
-# Emil Martini
+# CleanCode-TollFeeCalculator
+- Daniel Andersson
+- Emil Martini
 
 ## Hänvisning till buggar lösta som ej var med i bedömning.
 - **PrintTollCostTest()** => Output till konsol
